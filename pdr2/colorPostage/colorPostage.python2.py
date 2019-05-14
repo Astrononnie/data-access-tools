@@ -12,7 +12,7 @@
 33.997438    -5.011647       h.png
 33.997379    -5.010878       i.png
 33.996636    -5.008742       j.png
-> python colorPostage2.py --user YOUR_NAME --outDir pngs coords.txt  
+> python colorPostage.python2.py --user YOUR_NAME --outDir pngs coords.txt  
 
 '''
 

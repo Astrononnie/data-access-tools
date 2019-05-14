@@ -16,16 +16,15 @@ cat > coords.txt <<EOT
 33.996636    -5.008742       j.png
 EOT
 
-python colorPostage3.py --user YOUR_ACCOUNT --outDir pngs coords.txt
+python colorPostage.py --user YOUR_ACCOUNT --outDir pngs coords.txt
 ```
 
 ## Advanced Usage
 ```
-usage: colorPostage3.py [-h] --outDir OUTDIR --user USER
-                        [--filters FILTERS FILTERS FILTERS] [--fov FOV]
-                        [--rerun {any,pdr2_dud,pdr2_wide}]
-                        [--color {hsc,sdss}]
-                        input
+usage: colorPostage.py [-h] --outDir OUTDIR --user USER
+                       [--filters FILTERS FILTERS FILTERS] [--fov FOV]
+                       [--rerun {any,pdr2_dud,pdr2_wide}] [--color {hsc,sdss}]
+                       input
 
 positional arguments:
   input

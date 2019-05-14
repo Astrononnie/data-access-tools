@@ -4,17 +4,16 @@
 
 ```sh
 echo "SELECT now();" > 1.sql
-python hscReleaseQuery3.py --user $YOUR_ID 1.sql --format csv > 1.csv
+python hscReleaseQuery.py --user $YOUR_ID 1.sql --format csv > 1.csv
 ```
 
 ## Advanced Usage
 ```
-usage: hscReleaseQuery3.py [-h] --user USER [--release-version {pdr1,pdr2}]
-                           [--delete-job] [--format {csv,csv.gz,sqlite3,fits}]
-                           [--nomail] [--password-env PASSWORD_ENV]
-                           [--preview] [--skip-syntax-check]
-                           [--api-url API_URL]
-                           sql-file
+usage: hscReleaseQuery.py [-h] --user USER [--release-version {pdr1,pdr2}]
+                          [--delete-job] [--format {csv,csv.gz,sqlite3,fits}]
+                          [--nomail] [--password-env PASSWORD_ENV] [--preview]
+                          [--skip-syntax-check] [--api-url API_URL]
+                          sql-file
 
 positional arguments:
   sql-file              SQL file
