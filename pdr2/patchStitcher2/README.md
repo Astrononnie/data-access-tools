@@ -4,5 +4,6 @@ Similar to [Patch Stitcher #1](../patchStitcher1), but this one allows you to st
 ## Usage
 ```sh
 python patchStitcher2.py -o product ./pdr1_wide/deepCoadd-results/HSC-I/852[45]/*,*/calexp-*.fits
+
 ds9 product/stitched.fits
 ```
