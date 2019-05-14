@@ -1,4 +1,5 @@
 # Command line interface to SQL Database
+This tool allows you to send a query and retrieve data from your terminal.  This will be useful for sequential data retrieval.
 
 ## Basic Usage
 

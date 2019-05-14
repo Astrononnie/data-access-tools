@@ -1,4 +1,5 @@
 # Postage Stamps in Color
+If you want postage-stamps of your objects in color, you can upload an object list with this tool.
 
 ## Basic Usage
 ```sh
