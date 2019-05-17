@@ -1,5 +1,5 @@
 # Image Stitcher #2
-Similar to [Image Stitcher #1](../imageStitcher1), but this one allows you to stitch patches in different tracts together.  The HSC (or LSST) pipeline has to be installed to use this tool.  The overlapping regions between the adjacent tracts are not exactly the same; tract A may have slightly different DNs and astrometry from tract B in the overlapping region.  This tool simply adopts the pixels from tract B in the resultant image.
+Similar to [Image Stitcher #1](../imageStitcher1), but this one allows you to stitch patches in different tracts together.  The HSC (or LSST) pipeline has to be installed to use this tool.  The overlapping regions between the adjacent tracts are not exactly the same; tract A may have slightly different DNs and astrometry from tract B in the overlapping region.  This tool simply adopts the pixels from tract B in the resultant image.  This tool can also be used for CCD images to visualize a full focal plane image from a visit.
 
 ## Usage
 * For Patch Files
