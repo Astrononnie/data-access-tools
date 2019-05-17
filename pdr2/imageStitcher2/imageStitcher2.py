@@ -1,5 +1,5 @@
 # usage:
-# python patchStitcher2.py \
+# python imageStitcher2.py \
 #   -o outDir \
 #   calexp-HSC-I-937[0-3]-*,*.fits
 import lsst.afw.image as afwImage
@@ -17,14 +17,14 @@ import astropy.io.fits as pyfits
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--out', '-o', required=True)
-    parser.add_argument('--crval', type=float, nargs=2)
-    parser.add_argument('--pixel-scale', type=lambda a: a / 3600., default=0.168 / 3600., help='in arcsec')
-    parser.add_argument('--scale', type=float, default=1)
-    parser.add_argument('--patch-size', type=int, default=4000)
-    parser.add_argument('--parallel', '-j', type=int)
-    parser.add_argument('exposure', nargs='+')
+    parser = argparse.ArgumentParser(description='This tool stitches fits images with non-unique projection into a large image')
+    parser.add_argument('--out', '-o', required=True, help='output directory')
+    parser.add_argument('--crval', type=float, nargs=2, metavar=('CRVAL1', 'CRVAL2'), help='CRVAL of output image')
+    parser.add_argument('--pixel-scale', type=lambda a: a / 3600., default=0.168 / 3600., help='pixel scale in arcsec')
+    parser.add_argument('--scale', type=float, default=1, help='scale for the output image')
+    parser.add_argument('--patch-size', type=int, default=4000, help='patch size for intermediate processing')
+    parser.add_argument('--parallel', '-j', type=int, metavar='NUMBER_OR_PROCESSES', help='the number of jobs to run simltaneously')
+    parser.add_argument('exposure', nargs='+', metavar='FILE', help='src files (must have WCS)')
     args = parser.parse_args()
 
     mkdir_p(args.out)

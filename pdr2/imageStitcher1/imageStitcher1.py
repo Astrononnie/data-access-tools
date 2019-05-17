@@ -1,5 +1,5 @@
 # usage:
-#   python stitch.py -o ngc4030-stitch.fits ngc4030-out/deepCoadd/HSC-G/0/*/calexp-HSC-G-0-*
+#   python imageStitcher1.py -o ngc4030-stitch.fits ngc4030-out/deepCoadd/HSC-G/0/*/calexp-HSC-G-0-*
 
 import numpy
 from astropy.io import fits as afits
@@ -111,9 +111,9 @@ def cutoffBlank(data, mask):
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--out', '-o', required=True)
-    parser.add_argument('files', nargs='+')
+    parser = argparse.ArgumentParser(description='This tool stitches adjacent patches in the same tract together.')
+    parser.add_argument('--out', '-o', required=True, help='output file')
+    parser.add_argument('files', nargs='+', metavar='FILE', help='patch files to be stitched')
     args = parser.parse_args()
 
     boundary = boundary(args.files)
@@ -121,4 +121,3 @@ if __name__ == '__main__':
     # maskHdu  = stitchedHdu(args.files, boundary, image_index=2, dtype='uint16')
     # afits.HDUList([imageHdu, maskHdu]).writeto(args.out, output_verify='fix', clobber=True)
     afits.HDUList([imageHdu]).writeto(args.out, output_verify='fix', clobber=True)
-
