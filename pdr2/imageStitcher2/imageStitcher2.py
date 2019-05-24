@@ -63,7 +63,7 @@ def warp(config, targetWcs, bbox, outFile, files):
         e = afwImage.ExposureF(f)
         w1 = warper.warpExposure(targetWcs, e, destBBox=bbox)
         if i == 0:
-            w = w1
+            w = eraseNoDataArea(w1)
         else:
             mergeExposure(w, w1)
     w.writeFits(outFile)
@@ -73,11 +73,19 @@ def argsPackedWarp(args):
     return warp(*args)
 
 
+def eraseNoDataArea(exp):
+    mi = exp.getMaskedImage()
+    nodataValue = 1 << mi.getMask().getMaskPlane('NO_DATA')
+    ng = mi.getMask().getArray() & nodataValue > 0
+    mi.getImage().getArray()[ng] = numpy.nan
+    return exp
+
+
 def mergeExposure(a, b):
     a_mi = a.getMaskedImage()
     b_mi = b.getMaskedImage()
     nodataValue = 1 << b_mi.getMask().getMaskPlane('NO_DATA')
-    ok = b_mi.getMask().getArray() != nodataValue
+    ok = b_mi.getMask().getArray() & nodataValue == 0
     a_mi.getImage().getArray()[ok] = b_mi.getImage().getArray()[ok]
     a_mi.getMask().getArray()[ok] = b_mi.getMask().getArray()[ok]
     a_mi.getVariance().getArray()[ok] = b_mi.getVariance().getArray()[ok]
