@@ -17,22 +17,22 @@ Usage
 
 ### Example
 
-    view-mask.py calexp-HSC-I-0-4,4.fits \
+    maskViewer.py calexp-HSC-I-0-4,4.fits \
         detected=tomato \
         cr=purple \
         bright_object=palegoldenrod
 
 ### Details
 
-    view-mask.py FITS MASK=COLOR [MASK=COLOR ...]
+    maskViewer.py FITS MASK=COLOR [MASK=COLOR ...]
 
 #### FITS
 
     You can specify the HDU to view by suffixing `[...]` to the image path.
     For example,
 
-    view-mask.py calexp-HSC-I-0-4,4.fits[3] ...
-    view-mask.py calexp-HSC-I-0-4,4.fits[VARIANCE] ...
+    maskViewer.py calexp-HSC-I-0-4,4.fits[3] ...
+    maskViewer.py calexp-HSC-I-0-4,4.fits[VARIANCE] ...
 
 #### colors
 
@@ -44,13 +44,13 @@ Colors can be
 
 You can see available CSS color names by:
 
-    view-mask.py --show colors
+    maskViewer.py --show colors
 
 #### masks
 
 You can see available masks by:
 
-    view-mask.py FITS --show masks
+    maskViewer.py FITS --show masks
 
 You will, for instance, see:
 
@@ -68,9 +68,9 @@ with or without the prefix `MP_` . Mask names are
 case insensitive. All of the following command lines
 are valid:
 
-  * `view-mask.py FITS MP_DETECTED=white`
-  * `view-mask.py FITS DETECTED=white`
-  * `view-mask.py FITS detected=white`
+  * `maskViewer.py FITS MP_DETECTED=white`
+  * `maskViewer.py FITS DETECTED=white`
+  * `maskViewer.py FITS detected=white`
 
 Copyright
 ------------------------------------------------------------
