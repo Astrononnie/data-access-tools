@@ -46,9 +46,8 @@ def startup():
     parser.add_argument("fits", nargs="?", type=fits_load_image, help="""
         Input FITS file.
     """)
-    parser.add_argument("masks", metavar="mask[=color[,alpha]]", nargs="*", type=maskcolor_parse, help="""
+    parser.add_argument("masks", metavar="mask[=color]", nargs="*", type=maskcolor_parse, help="""
         Name of mask to show. `color` may be #rgb or #rrggbb or a color name.
-        `alpha` is a real number between 0 (transparent) to 100 (opaque).
     """)
     parser.add_argument("--mask", type=fits_load_mask, help="""
         Mask image alternative to what is contained in the input FITS file.
