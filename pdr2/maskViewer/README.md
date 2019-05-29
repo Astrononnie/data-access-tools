@@ -26,10 +26,10 @@ Usage
 
     maskViewer.py FITS MASK=COLOR [MASK=COLOR ...]
 
-#### FITS
+#### FITS file path
 
-    You can specify the HDU to view by suffixing `[...]` to the image path.
-    For example,
+You can specify the HDU to view by suffixing `[...]` to the image path.
+For example,
 
     maskViewer.py calexp-HSC-I-0-4,4.fits[3] ...
     maskViewer.py calexp-HSC-I-0-4,4.fits[VARIANCE] ...
