@@ -27,7 +27,7 @@ def main():
     parser.add_argument('exposure', nargs='+', metavar='FILE', help='src files (must have WCS)')
     args = parser.parse_args()
 
-    mkdir_p(args.out)
+    os.makedirs(args.out, exist_ok=True)
 
     warperConfig = afwMath.WarperConfig()
 
@@ -157,7 +157,9 @@ class Projection(object):
 
         refPoint = ad2xyz(*numpy.deg2rad(self.crval))
         w = numpy.cross(refPoint, [0, 0, 1]) # west axis
+        w /= numpy.linalg.norm(w)
         n = numpy.cross(w, refPoint)         # north axis
+        n /= numpy.linalg.norm(n)
 
         T = numpy.inner(w, numpy.array(cornerXYZ).T) / numpy.deg2rad(self.pixelScale)
         U = numpy.inner(n, numpy.array(cornerXYZ).T) / numpy.deg2rad(self.pixelScale)
@@ -166,6 +168,7 @@ class Projection(object):
         for i in range(len(self.fnames)):
             p = afwGeom.polygon.Polygon([afwGeom.Point2D(T[4 * i + j], U[4 * i + j]) for j in range(4)])
             polygons.append(p)
+
         return polygons
 
 
@@ -184,12 +187,6 @@ def xyz2ad(x, y, z):
     d = numpy.arctan2(z, r)
     return a % (2 * numpy.pi), d
 
-
-def mkdir_p(d):
-    try:
-        os.makedirs(d)
-    except:
-        pass
 
 
 def stitchedHdu(files, boundary, nodata=float('nan'), meta_index=0, image_index=1, dtype='float32'):
