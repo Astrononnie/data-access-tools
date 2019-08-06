@@ -141,7 +141,7 @@ def fits_load_image(path):
     else:
         index = None
 
-    hdus = pyfits.open(path)
+    hdus = pyfits.open(path, uint=True)
     if len(hdus) == 1 and (index is None):
         return (hdus[0], None)
 
@@ -157,7 +157,7 @@ def fits_load_image(path):
         if i == index or exttype == index:
             image = hdu
         elif exttype == "MASK":
-            mask = hdu
+            mask = fits_ensure_int_image(hdu)
 
     if image:
         return (image, mask)
@@ -180,7 +180,7 @@ def fits_load_mask(path):
     else:
         index = None
 
-    hdus = pyfits.open(path)
+    hdus = pyfits.open(path, uint=True)
     if len(hdus) == 1 and (index is None):
         return hdus[0]
 
@@ -193,13 +193,45 @@ def fits_load_mask(path):
         header = hdu.header
         exttype = header.get("EXTTYPE") or header.get("EXTNAME")
         if i == index or exttype == index:
-            mask = hdu
+            mask = fits_ensure_int_image(hdu)
             break
 
     if mask:
         return mask
 
     raise RuntimeError("FITS file doesn't contain a mask hdu: " + path)
+
+
+def fits_ensure_int_image(hdu):
+    """
+    Ensure that hdu is an integer image HDU.
+
+    It may be a bug of astropy but an integer image HDU is sometimes
+    converted to float one even if its header doesn't contain BZERO or BSCALE.
+    """
+    if hdu.data.dtype.kind in "iu":
+        # Already integer
+        return hdu
+
+    if (hdu.data.dtype.kind == "f"
+    and numpy.all(numpy.floor(hdu.data) == hdu.data)
+    ):
+        leftmost_bit = max(bitplace
+            for key, bitplace in hdu.header.items()
+            if key.startswith("MP_") and isinstance(bitplace, int)
+        )
+        if leftmost_bit < 8:
+            dtype = numpy.uint8
+        elif leftmost_bit < 16:
+            dtype = numpy.uint16
+        elif leftmost_bit < 32:
+            dtype = numpy.uint32
+        else:
+            dtype = numpy.uint64
+
+        return type(hdu)(data=hdu.data.astype(dtype), header=hdu.header)
+
+    raise RuntimeError("Mask data is not integer.")
 
 
 def fits_to_bytes(hdus):
