@@ -11,7 +11,7 @@ import re
 import ssl
 
 
-version = 20160120.1
+version = 20190924.1
 
 
 args = None
@@ -21,7 +21,7 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--user', '-u', required=True,
                         help='specify your STARS account')
-    parser.add_argument('--release-version', '-r', choices='dr2-citus dr2 dr1 dr_early'.split(), required=True,
+    parser.add_argument('--release-version', '-r', choices='dr3 dr2-citus dr2 dr1 dr_early'.split(), required=True,
                         help='specify release version')
     parser.add_argument('--delete-job', '-D', action='store_true',
                         help='delete the job you submitted after your downloading')
