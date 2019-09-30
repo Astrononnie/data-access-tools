@@ -1,1 +1,0 @@
-catalogQuery/hscSspQuery2.py
