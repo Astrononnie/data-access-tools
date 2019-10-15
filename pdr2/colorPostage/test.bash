@@ -12,5 +12,5 @@ cat > coords.txt <<EOT
 33.996636    -5.008742       j.png
 EOT
 
-~/anaconda3/bin/python colorPostage3.py --user koikem@stars --outDir png3 ./coords.txt
-~/anaconda2/bin/python colorPostage2.py --user koikem@stars --outDir png2 ./coords.txt
+~/anaconda3/bin/python colorPostage.py --user koikem@stars --outDir png3 ./coords.txt
+~/anaconda2/bin/python colorPostage.python2.py --user koikem@stars --outDir png2 ./coords.txt

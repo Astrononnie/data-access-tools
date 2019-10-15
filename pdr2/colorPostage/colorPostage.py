@@ -61,8 +61,8 @@ def main():
                 makeColorPng(rgb, outFile, args.color)
 
 
-TOP_PAGE = 'https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr2.wkf/'
-API = 'https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr2.wkf/cgi-bin/cutout'
+TOP_PAGE = 'https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr2/'
+API = 'https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr2/cgi-bin/cutout'
 
 
 def loadCoords(input):
