@@ -55,8 +55,8 @@ def main():
         with requestFileFor(batchCoords, args.filters, args.fov, args.rerun) as requestFile:
             tarMembers = queryTar(args.user, password, requestFile)
             for i, rgb in rgbBundle(tarMembers):
-                j = batchI * batchSize + i + 1
-                outFile = os.path.join(args.outDir, '{}.png'.format(j))
+                j = batchI * batchSize + i
+                outFile = os.path.join(args.outDir, outs[j])
                 logging.info('-> {}'.format(outFile))
                 makeColorPng(rgb, outFile, args.color)
 
@@ -138,7 +138,7 @@ def checkPassword(user, password):
         netrc.flush()
         httpCode = subprocess.check_output(['curl', '--netrc-file', netrc.name, '-o', os.devnull, '-w', '%{http_code}', '-s', TOP_PAGE]).strip()
         if httpCode == '401':
-            raise RuntimeError, 'Account or Password is not correct'
+            raise RuntimeError('Account or Password is not correct')
 
 
 def queryTar(user, password, requestFile):
