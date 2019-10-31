@@ -61,8 +61,8 @@ def main():
                 makeColorPng(rgb, outFile, args.color)
 
 
-TOP_PAGE = 'https://hsc-release.mtk.nao.ac.jp/das_quarry/'
-API = 'https://hsc-release.mtk.nao.ac.jp/das_quarry/cgi-bin/quarryImage'
+TOP_PAGE = 'https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr2/'
+API = 'https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr2/cgi-bin/cutout'
 
 
 def loadCoords(input):
@@ -161,9 +161,6 @@ def queryTar(user, password, requestFile):
                 f = tar.extractfile(info)
                 yield info, f
                 f.close()
-
-        pipe.wait()
-
 
 def makeColorPng(rgb, out, color):
     if len(rgb) == 0:
