@@ -38,7 +38,7 @@ def main():
     parser.add_argument('--user', '-u', required=True)
     parser.add_argument('--filters', '-f', type=float, nargs=3, default=['HSC-I', 'HSC-R', 'HSC-G'])
     parser.add_argument('--fov', default='30asec')
-    parser.add_argument('--rerun', default='any', choices='any pdr1_udeep pdr1_deep pdr1_wide pdr2_dud pdr2_wide'.split())
+    parser.add_argument('--rerun', default='any', choices='any pdr2_dud pdr2_wide'.split())
     parser.add_argument('--color', choices='hsc sdss'.split(), default='hsc')
     parser.add_argument('input', type=argparse.FileType('r'))
     args = parser.parse_args()
