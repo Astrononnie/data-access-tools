@@ -55,6 +55,8 @@ def stitchedHdu(files, boundary, *, nodata=float('nan'), meta_index=0, image_ind
                     key = f'CD{i}_{j}'
                     if key in header:
                         header[key] *= binsize
+            assert float.is_integer(header['CRPIX1'])
+            assert float.is_integer(header['CRPIX2'])
             crpix1 = bin(int(header['CRPIX1']))
             crpix2 = bin(int(header['CRPIX2']))
             naxis1 = bin(header['NAXIS1'])
