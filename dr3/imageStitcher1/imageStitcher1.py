@@ -67,8 +67,10 @@ def stitchedHdu(files, boundary, *, nodata=float('nan'), meta_index=0, image_ind
     header['FLUXMAG0'] = baseFluxMag0
 
     hdu = afits.ImageHDU(pool)
-    header['LTV1']   += -header['CRPIX1'] - minx
-    header['LTV2']   += -header['CRPIX2'] - miny
+    header['CRPIX1'] = (header['CRPIX1'] + 0.5) / binsize - 0.5
+    header['CRPIX2'] = (header['CRPIX2'] + 0.5) / binsize - 0.5
+    header['LTV1'] += -header['CRPIX1'] - minx
+    header['LTV2'] += -header['CRPIX2'] - miny
     header['CRPIX1'] = -minx
     header['CRPIX2'] = -miny
     hdu.header = header
