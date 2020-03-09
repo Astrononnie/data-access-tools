@@ -10,14 +10,17 @@ ds9 stitched.fits
 
 ## ```--help```
 ```
-usage: imageStitcher1.py [-h] --out OUT FILE [FILE ...]
+usage: imageStitcher1.py [-h] --out OUT [--binsize BINSIZE] FILE [FILE ...]
 
 This tool stitches adjacent patches in the same tract together.
 
 positional arguments:
-  FILE               patch files to be stitched
+  FILE                  patch files to be stitched
 
 optional arguments:
-  -h, --help         show this help message and exit
-  --out OUT, -o OUT  output file
+  -h, --help            show this help message and exit
+  --out OUT, -o OUT     output file
+  --binsize BINSIZE, -b BINSIZE
+                        bin size
 ```
+

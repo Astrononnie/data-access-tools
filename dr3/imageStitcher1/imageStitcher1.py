@@ -7,9 +7,10 @@ import logging
 import math
 import logging ; logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 import traceback
+import itertools
 
 
-def stitchedHdu(files, boundary, nodata=float('nan'), meta_index=0, image_index=1, dtype='float32'):
+def stitchedHdu(files, boundary, *, nodata=float('nan'), meta_index=0, image_index=1, dtype='float32', binsize):
     #        ^
     #        |
     #        |
@@ -26,12 +27,18 @@ def stitchedHdu(files, boundary, nodata=float('nan'), meta_index=0, image_index=
     # (minx, miny)
     #
 
+    bin = Bin(binsize)
+
     ((minx, miny), (maxx, maxy)) = boundary
+    minx = bin(minx)
+    miny = bin(miny)
+    maxx = bin(maxx)
+    maxy = bin(maxy)
 
     width = maxx - minx
     height = maxy - miny
 
-    logging.info('allocating image buffer %(width)d x %(height)d' % locals())
+    logging.info(f'allocating image buffer {width} x {height}')
     pool = numpy.empty((height, width), dtype=dtype)
     pool.fill(nodata)
 
@@ -43,11 +50,15 @@ def stitchedHdu(files, boundary, nodata=float('nan'), meta_index=0, image_index=
             with afits.open(fname) as hdul:
                 fluxMag0, fluxMag0Err = getFluxMag0(hdul)
                 header = hdul[image_index].header
-                data = hdul[image_index].data
-            crpix1 = int(header['CRPIX1'])
-            crpix2 = int(header['CRPIX2'])
-            naxis1 = header['NAXIS1']
-            naxis2 = header['NAXIS2']
+                data = binimage(hdul[image_index].data, binsize)
+                for i, j in itertools.product([1, 2], [1, 2]):
+                    key = f'CD{i}_{j}'
+                    if key in header:
+                        header[key] *= binsize
+            crpix1 = bin(int(header['CRPIX1']))
+            crpix2 = bin(int(header['CRPIX2']))
+            naxis1 = bin(header['NAXIS1'])
+            naxis2 = bin(header['NAXIS2'])
             pool[-crpix2 - miny : naxis2 - crpix2 - miny,
                  -crpix1 - minx : naxis1 - crpix1 - minx] = (baseFluxMag0 / fluxMag0) * data
         except:
@@ -63,6 +74,27 @@ def stitchedHdu(files, boundary, nodata=float('nan'), meta_index=0, image_index=
     hdu.header = header
 
     return hdu
+
+
+class Bin:
+    def __init__(self, binsize):
+        self._binsize = binsize
+
+    def __call__(self, n):
+        assert n % self._binsize == 0, f'binsize should be one of divisor of {n}'
+        return n // self._binsize
+
+
+def binimage(array, binsize):
+    if binsize == 1:
+        return array
+    else:
+        s = array.shape
+        b = binsize
+        assert s[0] % b == 0, f'binsize should be one of divisor of image height ({s[0]})'
+        assert s[1] % b == 0, f'binsize should be one of divisor of image width ({s[1]})'
+        array2 = numpy.average(array.reshape((s[0] // b, b, s[1] // b, b)), axis=(1, 3))
+        return array2
 
 
 def boundary(files, image_index=1):
@@ -119,11 +151,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='This tool stitches adjacent patches in the same tract together.')
     parser.add_argument('--out', '-o', required=True, help='output file')
+    parser.add_argument('--binsize', '-b', type=int, default=1, help='bin size')
     parser.add_argument('files', nargs='+', metavar='FILE', help='patch files to be stitched')
     args = parser.parse_args()
 
     boundary = boundary(args.files)
-    imageHdu = stitchedHdu(args.files, boundary)
+    imageHdu = stitchedHdu(args.files, boundary, binsize=args.binsize)
     # maskHdu  = stitchedHdu(args.files, boundary, image_index=2, dtype='uint16')
     # afits.HDUList([imageHdu, maskHdu]).writeto(args.out, output_verify='fix', clobber=True)
     afits.HDUList([imageHdu]).writeto(args.out, output_verify='fix', clobber=True)
+
