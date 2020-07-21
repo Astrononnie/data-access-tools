@@ -40,7 +40,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--outDir', '-o', required=True)
     parser.add_argument('--user', '-u', required=True)
-    parser.add_argument('--filters', '-f', type=float,
+    parser.add_argument('--filters', '-f',
                         nargs=3, default=['HSC-I', 'HSC-R', 'HSC-G'])
     parser.add_argument('--fov', default='30asec')
     parser.add_argument('--rerun', default='any',
