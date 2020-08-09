@@ -3,11 +3,10 @@
 
 import argparse
 import logging
-from typing import Dict, List, Set, Tuple
+from typing import Any, Dict, List, Tuple, cast
 
 import numpy
 from astropy.io import fits as afits
-from astropy.io.fits.hdu.hdulist import HDUList
 
 
 def main():
@@ -48,35 +47,34 @@ class Stitcher:
     def _stitch(self):
         ((minx, miny), (maxx, maxy)) = self._bbox
 
-        W = maxx - minx  # width
-        H = maxy - miny  # height
+        width = maxx - minx
+        height = maxy - miny
 
-        logging.info(f'allocating image buffer {W} x {H}')
-        pool = numpy.empty((H, W), dtype=self.dtype)
+        logging.info(f'allocating image buffer {width} x {height}')
+        pool = numpy.empty((height, width), dtype=self.dtype)
         pool.fill(self.nodata)
 
-        header: afits.Header
-        data: numpy.ndarray
+        header = cast(afits.Header, None)
+        data = cast(numpy.ndarray, None)
 
         for fname in self._files:
             logging.info(f'pasting {fname}...')
             with afits.open(fname, **self.fits_open_options) as hdul:
                 try:
-                    header = hdul[self.hdu_index].header
-                    data = hdul[self.hdu_index].data
+                    header = hdul[self.hdu_index].header  # type: ignore
+                    data = hdul[self.hdu_index].data  # type: ignore
                 except:
                     logging.info(f'failed to read {fname}')
                     continue
-                crpix1 = int(header['CRPIX1'])
-                crpix2 = int(header['CRPIX2'])
+                crpix1 = int(header['CRPIX1'])  # type: ignore
+                crpix2 = int(header['CRPIX2'])  # type: ignore
                 naxis1 = header['NAXIS1']
                 naxis2 = header['NAXIS2']
                 pool[-crpix2 - miny: naxis2 - crpix2 - miny,
                      -crpix1 - minx: naxis1 - crpix1 - minx] = self._normalized_data(data, hdul)
 
-        hdu = afits.ImageHDU(pool)
-        header['LTV1'] += -header['CRPIX1'] - minx
-        header['LTV2'] += -header['CRPIX2'] - miny
+        header['LTV1'] += -header['CRPIX1'] - minx  # type: ignore
+        header['LTV2'] += -header['CRPIX2'] - miny  # type: ignore
         header['CRPIX1'] = -minx
         header['CRPIX2'] = -miny
         self._cleanup_header(header)
@@ -133,7 +131,7 @@ class MaskStitcher(Stitcher):
         super().__init__(*args, **kwargs)
 
     def _normalized_data(self, data: numpy.ndarray, hdul: afits.HDUList):
-        header: afits.Header = hdul[self.hdu_index].header
+        header: afits.Header = hdul[self.hdu_index].header  # type: ignore
         mp_keys = [k for k in header.keys() if k.startswith('MP_')]
         pool = numpy.zeros_like(data)
         for k in mp_keys:
@@ -149,7 +147,7 @@ class MaskStitcher(Stitcher):
             header[k] = b
 
 
-def containing_bbox(files, image_index=1) -> BBox:
+def containing_bbox(files: List[str], image_index=1) -> BBox:
     #    ^
     #    |    +---------+
     #    |    |        (X,Y)
@@ -177,7 +175,8 @@ def containing_bbox(files, image_index=1) -> BBox:
     return (min(minx), min(miny)), (max(maxx), max(maxy))
 
 
-def get_mag0(hdul: afits.HDUList) -> Tuple[float, float]:
+def get_mag0(_hdul: afits.HDUList) -> Tuple[float, float]:
+    hdul: Any = _hdul
     if 'FLUXMAG0' in hdul[0].header:
         return hdul[0].header['FLUXMAG0'], hdul[0].header.get('FLUXMAG0ERR', float('nan'))
     else:
