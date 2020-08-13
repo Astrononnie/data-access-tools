@@ -42,7 +42,10 @@ class Stitcher:
     def __init__(self, *, files: List[str], bbox: BBox):
         self._files = files
         self._bbox = bbox
-        self.hdu = self._stitch()
+    
+    @property
+    def hdu(self):
+        return self._stitch()
 
     def _stitch(self):
         ((minx, miny), (maxx, maxy)) = self._bbox
@@ -127,12 +130,12 @@ class MaskStitcher(Stitcher):
     fits_open_options = dict(do_not_scale_image_data=True)
 
     def __init__(self, *args, **kwargs):
-        self._mp: Dict[str, int] = {}
         super().__init__(*args, **kwargs)
+        self._mp: Dict[str, int] = {}
 
     def _normalized_data(self, data: numpy.ndarray, hdul: afits.HDUList):
         header: afits.Header = hdul[self.hdu_index].header  # type: ignore
-        mp_keys = [k for k in header.keys() if k.startswith('MP_')]
+        mp_keys = sorted([k for k in header.keys() if k.startswith('MP_')], key=lambda k: cast(int, header[k]))
         pool = numpy.zeros_like(data)
         for k in mp_keys:
             b1 = header[k]
