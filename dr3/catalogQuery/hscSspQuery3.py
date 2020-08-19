@@ -25,7 +25,7 @@ def main():
                         help='specify release version')
     parser.add_argument('--delete-job', '-D', action='store_true',
                         help='delete the job you submitted after your downloading')
-    parser.add_argument('--format', '-f', dest='out_format', default='csv', choices=['csv', 'csv.gz', 'sqlite3', 'fits', 'numpygres-fits'],
+    parser.add_argument('--format', '-f', dest='out_format', default='csv', choices=['csv', 'csv.gz', 'sqlite3', 'fits', 'numpygres-fits', 'fast-fits'],
                         help='specify output format')
     parser.add_argument('--nomail', '-M', action='store_true',
                         help='suppress email notice')
