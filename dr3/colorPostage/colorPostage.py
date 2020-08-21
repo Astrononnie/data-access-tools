@@ -44,7 +44,7 @@ def main():
                         nargs=3, default=['HSC-I', 'HSC-R', 'HSC-G'])
     parser.add_argument('--fov', default='30asec')
     parser.add_argument('--rerun', default='any',
-                        choices='any s19a_wide s19a_dud'.split())
+                        choices='any s20a_dud s20a_wide s19a_wide s19a_dud'.split())
     parser.add_argument('--color', choices='hsc sdss'.split(), default='hsc')
     parser.add_argument('input', type=argparse.FileType('r'))
     args = parser.parse_args()
