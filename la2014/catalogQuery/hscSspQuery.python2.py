@@ -7,8 +7,6 @@ import csv
 import getpass
 import os
 import os.path
-import re
-import ssl
 
 
 version = 20190924.1
