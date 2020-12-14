@@ -1,15 +1,16 @@
-import json
 import argparse
-import urllib.request, urllib.error, urllib.parse
-import time
-import sys
 import csv
 import getpass
+import http.cookies
+import json
 import os
 import os.path
-import re
-import ssl
-
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from typing import Dict, Optional
 
 version = 20190924.1
 
@@ -20,8 +21,8 @@ args = None
 def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--user', '-u', required=True,
-                        help='specify your STARS account')
-    parser.add_argument('--release-version', '-r', choices='dr3 dr3-citus dr2 dr1 dr_early'.split(), required=True,
+                        help='specify your account')
+    parser.add_argument('--release-version', '-r', choices='hscla'.split(), default='hscla',
                         help='specify release version')
     parser.add_argument('--delete-job', '-D', action='store_true',
                         help='delete the job you submitted after your downloading')
@@ -29,13 +30,15 @@ def main():
                         help='specify output format')
     parser.add_argument('--nomail', '-M', action='store_true',
                         help='suppress email notice')
-    parser.add_argument('--password-env', default='HSC_SSP_CAS_PASSWORD',
-                        help='specify the environment variable that has STARS password as its content')
+    parser.add_argument('--password-env', default='HSC_LA_PASSWORD',
+                        help='specify the environment variable which contains the password')
     parser.add_argument('--preview', '-p', action='store_true',
                         help='quick mode (short timeout)')
     parser.add_argument('--skip-syntax-check', '-S', action='store_true',
                         help='skip syntax check')
-    parser.add_argument('--api-url', default='https://hscdata.mtk.nao.ac.jp/datasearch/api/catalog_jobs/',
+    parser.add_argument('--api-url', default='https://hscla.mtk.nao.ac.jp/datasearch/api/catalog_jobs/',
+                        help='for developers')
+    parser.add_argument('--login-url', default='https://hscla.mtk.nao.ac.jp/account/api/session',
                         help='for developers')
     parser.add_argument('sql-file', type=argparse.FileType('r'),
                         help='SQL file')
@@ -44,13 +47,16 @@ def main():
     args = parser.parse_args()
 
     credential = {'account_name': args.user, 'password': getPassword()}
+    httpJsonPost.credential = credential
+    httpJsonPost.login_url = args.login_url
+
     sql = args.__dict__['sql-file'].read()
 
     job = None
 
     try:
         if args.preview:
-            preview(credential, sql, sys.stdout.buffer)
+            preview(credential, sql, sys.stdout)
         else:
             job = submitJob(credential, sql, args.out_format)
             blockUntilJobFinishes(credential, job['id'])
@@ -80,27 +86,54 @@ class QueryError(Exception):
     pass
 
 
-def httpJsonPost(url, data):
-    data['clientVersion'] = version
-    postData = json.dumps(data)
-    return httpPost(url, postData, {'Content-type': 'application/json'})
+class HttpJsonPost:
+    def __init__(self):
+        self.credential: Optional[Dict] = None
+        self._session: Optional[str] = None
+        self.login_url: Optional[str] = None
+
+    def _httpPost(self, url, postData, headers):
+        req = urllib.request.Request(url, postData.encode('utf-8'), headers)
+        res = urllib.request.urlopen(req)
+        return res
+
+    def __call__(self, url, data):
+        assert (self.login_url is None) == (self.credential is None)
+        data['clientVersion'] = version
+        headers = {'Content-type': 'application/json'}
+        if self.credential:
+            if self._session is None and self.login_url:
+                try:
+                    res = self._httpPost(
+                        self.login_url,
+                        json.dumps({
+                            'email': self.credential['account_name'],
+                            'password': self.credential['password']
+                        }), headers)
+                except urllib.error.HTTPError as e:
+                    if e.code == 422:
+                        print('invalid id or password.', file=sys.stderr)
+                        exit(1)
+                    raise
+                self._session = http.cookies.SimpleCookie(res.headers['Set-Cookie'])['LAAUTH_SESSION'].value
+            headers['Cookie'] = f'LAAUTH_SESSION={self._session}'
+        postData = json.dumps(data)
+        return self._httpPost(url, postData, headers)
 
 
-def httpPost(url, postData, headers):
-    req = urllib.request.Request(url, postData.encode('utf-8'), headers)
-    res = urllib.request.urlopen(req)
-    return res
+httpJsonPost = HttpJsonPost()
 
 
 def submitJob(credential, sql, out_format):
     url = args.api_url + 'submit'
     catalog_job = {
-        'sql'                     : sql,
-        'out_format'              : out_format,
+        'sql': sql,
+        'out_format': out_format,
         'include_metainfo_to_body': True,
-        'release_version'         : args.release_version,
+        'release_version': args.release_version,
     }
-    postData = {'credential': credential, 'catalog_job': catalog_job, 'nomail': args.nomail, 'skip_syntax_check': args.skip_syntax_check}
+    postData = {'credential': credential, 'catalog_job': catalog_job,
+                'nomail': args.nomail, 'skip_syntax_check': args.skip_syntax_check}
     res = httpJsonPost(url, postData)
     job = json.load(res)
     return job
@@ -123,8 +156,8 @@ def jobCancel(credential, job_id):
 def preview(credential, sql, out):
     url = args.api_url + 'preview'
     catalog_job = {
-        'sql'             : sql,
-        'release_version' : args.release_version,
+        'sql': sql,
+        'release_version': args.release_version,
     }
     postData = {'credential': credential, 'catalog_job': catalog_job}
     res = httpJsonPost(url, postData)
@@ -140,7 +173,7 @@ def preview(credential, sql, out):
 
 
 def blockUntilJobFinishes(credential, job_id):
-    max_interval = 5 * 60 # sec.
+    max_interval = 5 * 60  # sec.
     interval = 1
     while True:
         time.sleep(interval)
@@ -158,7 +191,7 @@ def download(credential, job_id, out):
     url = args.api_url + 'download'
     postData = {'credential': credential, 'id': job_id}
     res = httpJsonPost(url, postData)
-    bufSize = 64 * 1<<10 # 64k
+    bufSize = 64 * 1 << 10  # 64k
     while True:
         buf = res.read(bufSize)
         out.write(buf)

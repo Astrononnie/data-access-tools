@@ -21,7 +21,7 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--user', '-u', required=True,
                         help='specify your STARS account')
-    parser.add_argument('--release-version', '-r', choices='dr3 dr2 dr1 dr_early'.split(), required=True,
+    parser.add_argument('--release-version', '-r', choices='hscla'.split(), default='hscla',
                         help='specify release version')
     parser.add_argument('--delete-job', '-D', action='store_true',
                         help='delete the job you submitted after your downloading')
@@ -29,13 +29,15 @@ def main():
                         help='specify output format')
     parser.add_argument('--nomail', '-M', action='store_true',
                         help='suppress email notice')
-    parser.add_argument('--password-env', default='HSC_SSP_CAS_PASSWORD',
-                        help='specify the environment variable that has STARS password as its content')
+    parser.add_argument('--password-env', default='HSC_LA_PASSWORD',
+                        help='specify the environment variable which contains the password')
     parser.add_argument('--preview', '-p', action='store_true',
                         help='quick mode (short timeout)')
     parser.add_argument('--skip-syntax-check', '-S', action='store_true',
                         help='skip syntax check')
-    parser.add_argument('--api-url', default='https://hscdata.mtk.nao.ac.jp/datasearch/api/catalog_jobs/',
+    parser.add_argument('--api-url', default='https://hscla.mtk.nao.ac.jp/datasearch/api/catalog_jobs/',
+                        help='for developers')
+    parser.add_argument('--login-url', default='https://hscla.mtk.nao.ac.jp/account/api/session',
                         help='for developers')
     parser.add_argument('sql-file', type=argparse.FileType('r'),
                         help='SQL file')
@@ -44,6 +46,8 @@ def main():
     args = parser.parse_args()
 
     credential = {'account_name': args.user, 'password': getPassword()}
+    httpJsonPost.credential = credential
+    httpJsonPost.login_url = args.login_url
     sql = args.__dict__['sql-file'].read()
 
     job = None
@@ -80,16 +84,43 @@ class QueryError(Exception):
     pass
 
 
-def httpJsonPost(url, data):
-    data['clientVersion'] = version
-    postData = json.dumps(data)
-    return httpPost(url, postData, {'Content-type': 'application/json'})
+class HttpJsonPost:
+    def __init__(self):
+        self.credential = None
+        self._session = None
+        self.login_url = None
+
+    def _httpPost(self, url, postData, headers):
+        req = urllib2.Request(url, postData, headers)
+        res = urllib2.urlopen(req)
+        return res
+
+    def __call__(self, url, data):
+        assert (self.login_url is None) == (self.credential is None)
+        data['clientVersion'] = version
+        headers = {'Content-type': 'application/json'}
+        if self.credential:
+            import Cookie
+            if self._session is None and self.login_url:
+                try:
+                    res = self._httpPost(
+                        self.login_url,
+                        json.dumps({
+                            'email': self.credential['account_name'],
+                            'password': self.credential['password']
+                        }), headers)
+                except urllib2.HTTPError as e:
+                    if e.code == 422:
+                        print >> sys.stderr, 'invalid id or password.'
+                        exit(1)
+                    raise
+                self._session = Cookie.SimpleCookie(res.headers['Set-Cookie'])['LAAUTH_SESSION'].value
+            headers['Cookie'] = 'LAAUTH_SESSION=' + self._session
+        postData = json.dumps(data)
+        return self._httpPost(url, postData, headers)
 
 
-def httpPost(url, postData, headers):
-    req = urllib2.Request(url, postData, headers)
-    res = urllib2.urlopen(req)
-    return res
+httpJsonPost = HttpJsonPost()
 
 
 def submitJob(credential, sql, out_format):
