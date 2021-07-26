@@ -34,7 +34,7 @@ There are a few differences:
   - You can use "all" as a value of "filter" field.
 
   - There may be columns with unrecognised names,
-    which are silently be ignored.
+    which are silently ignored.
 
 It is permissible for the coordinate list to contain only coordinates.
 For example:
