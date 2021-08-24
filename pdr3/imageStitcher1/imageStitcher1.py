@@ -4,13 +4,12 @@
 import numpy
 from astropy.io import fits as afits
 import logging
-import math
-import logging ; logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
+import logging
 import traceback
 import itertools
 
 
-def stitchedHdu(files, boundary, *, nodata=float('nan'), meta_index=0, image_index=1, dtype='float32', binsize):
+def stitchedHdu(files, boundary, *, nodata=float('nan'), meta_index=0, image_index=1, dtype='float32', binsize, hduFactory=afits.ImageHDU):
     #        ^
     #        |
     #        |
@@ -68,7 +67,7 @@ def stitchedHdu(files, boundary, *, nodata=float('nan'), meta_index=0, image_ind
     
     header['FLUXMAG0'] = baseFluxMag0
 
-    hdu = afits.ImageHDU(pool)
+    hdu = hduFactory(pool)
     header['CRPIX1'] = (header['CRPIX1'] - 0.5) / binsize + 0.5
     header['CRPIX2'] = (header['CRPIX2'] - 0.5) / binsize + 0.5
     header['LTV1'] += -header['CRPIX1'] - minx
@@ -158,10 +157,10 @@ if __name__ == '__main__':
     parser.add_argument('--binsize', '-b', type=int, default=1, help='bin size')
     parser.add_argument('files', nargs='+', metavar='FILE', help='patch files to be stitched')
     args = parser.parse_args()
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 
     boundary = boundary(args.files)
-    imageHdu = stitchedHdu(args.files, boundary, binsize=args.binsize)
+    imageHdu = stitchedHdu(args.files, boundary, binsize=args.binsize, hduFactory=afits.PrimaryHDU)
     # maskHdu  = stitchedHdu(args.files, boundary, image_index=2, dtype='uint16')
-    # afits.HDUList([imageHdu, maskHdu]).writeto(args.out, output_verify='fix', clobber=True)
-    afits.HDUList([imageHdu]).writeto(args.out, output_verify='fix', clobber=True)
-
+    # afits.HDUList([imageHdu, maskHdu]).writeto(args.out, output_verify='fix', overwrite=True)
+    afits.HDUList([imageHdu]).writeto(args.out, output_verify='fix', overwrite=True)

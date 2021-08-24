@@ -4,16 +4,14 @@
 #   calexp-HSC-I-937[0-3]-*,*.fits
 import lsst.afw.image as afwImage
 import lsst.afw.math as afwMath
-import lsst.afw.coord as afwCoord
 import lsst.afw.geom as afwGeom
-import lsst.coadd.utils as coaddUtils
+import lsst.geom as lsstGeom
 import argparse
-import logging ; logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
-import math
+import logging
 import multiprocessing
 import numpy
-import os.path
-import astropy.io.fits as pyfits
+import os
+import astropy.io.fits as afits
 
 
 def main():
@@ -26,6 +24,8 @@ def main():
     parser.add_argument('--parallel', '-j', type=int, metavar='NUMBER_OR_PROCESSES', help='the number of jobs to run simltaneously')
     parser.add_argument('exposure', nargs='+', metavar='FILE', help='src files (must have WCS)')
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s %(message)s')
 
     os.makedirs(args.out, exist_ok=True)
 
@@ -45,13 +45,13 @@ def main():
 
     bbox = boundary(warpFiles)
 
-    pyfits.HDUList([
+    afits.HDUList([
         stitchedHdu(warpFiles, bbox, image_index=1),
         # stitchedHdu(warpFiles, bbox, image_index=2, dtype=numpy.uint16),
         # stitchedHdu(warpFiles, bbox, image_index=3),
-    ]).writeto(args.out + '/stitched.fits', output_verify='fix', clobber=True)
+    ]).writeto(args.out + '/stitched.fits', output_verify='silentfix', overwrite=True)
 
-    logging.warn('This program is not fully tested. Use resultant data carefully')
+    logging.warning('This program is not fully tested. Use resultant data carefully')
 
 
 def warp(config, targetWcs, bbox, outFile, files):
@@ -100,8 +100,8 @@ class Projection(object):
 
 
     def targetWcs(self):
-        crpix = afwGeom.Point2D(0., 0.)
-        crval = afwGeom.SpherePoint(*self.crval, afwGeom.degrees)
+        crpix = lsstGeom.Point2D(0., 0.)
+        crval = lsstGeom.SpherePoint(*self.crval, afwGeom.degrees)
         cdMatrix = numpy.array([[-self.pixelScale, 0.], [0., self.pixelScale]])
         return afwGeom.makeSkyWcs(crpix, crval, cdMatrix)
 
@@ -113,18 +113,18 @@ class Projection(object):
             for yi, y in enumerate(range(int(minY), int(maxY + 1), patchSize)):
                 overlapFnames = []
                 patchPolygon = afwGeom.polygon.Polygon([
-                    afwGeom.Point2D(x + w * xx, y + w * yy)
+                    lsstGeom.Point2D(x + w * xx, y + w * yy)
                     for xx, yy in [(0., 0.), (1., 0.), (1., 1.), (0., 1.)]
                 ])
                 for i, p in enumerate(self._polygons):
                     if p.overlaps(patchPolygon):
                         overlapFnames.append(self.fnames[i])
-                bbox = afwGeom.Box2I(afwGeom.Point2I(x, y), afwGeom.Extent2I(w, w))
+                bbox = lsstGeom.Box2I(lsstGeom.Point2I(x, y), lsstGeom.Extent2I(w, w))
                 yield xi, yi, bbox, overlapFnames
 
 
     def _getBBox(self):
-        b = afwGeom.Box2D()
+        b = lsstGeom.Box2D()
         for p in self._polygons:
             b.include(p.getBBox())
         return b.getMin(), b.getMax()
@@ -166,7 +166,7 @@ class Projection(object):
 
         polygons = []
         for i in range(len(self.fnames)):
-            p = afwGeom.polygon.Polygon([afwGeom.Point2D(T[4 * i + j], U[4 * i + j]) for j in range(4)])
+            p = afwGeom.polygon.Polygon([lsstGeom.Point2D(T[4 * i + j], U[4 * i + j]) for j in range(4)])
             polygons.append(p)
 
         return polygons
@@ -189,7 +189,7 @@ def xyz2ad(x, y, z):
 
 
 
-def stitchedHdu(files, boundary, nodata=float('nan'), meta_index=0, image_index=1, dtype='float32'):
+def stitchedHdu(files, boundary, nodata=float('nan'), meta_index=0, image_index=1, dtype='float32', hduFactory=afits.ImageHDU):
     #        ^
     #        |
     #        |
@@ -219,7 +219,7 @@ def stitchedHdu(files, boundary, nodata=float('nan'), meta_index=0, image_index=
     for fname in files:
         logging.info('pasting %(fname)s...' % locals())
         try:
-            with pyfits.open(fname) as hdul:
+            with afits.open(fname) as hdul:
                 if fluxMag0 is None and 'FLUXMAG0' in hdul[meta_index].header:
                     fluxMag0 = hdul[0].header['FLUXMAG0']
                 header = hdul[image_index].header
@@ -235,7 +235,7 @@ def stitchedHdu(files, boundary, nodata=float('nan'), meta_index=0, image_index=
             traceback.print_exc()
             # logging.info('failed to read %s' % fname)
 
-    hdu = pyfits.ImageHDU(pool)
+    hdu = hduFactory(pool)
     header['CRPIX1'] = -minx
     header['CRPIX2'] = -miny
     # header['LTV1'] = header['CRPIX1'] - ref_point_phys1
@@ -265,7 +265,7 @@ def boundary(files, image_index=1):
     for fname in files:
         logging.info('reading header of %(fname)s...' % locals())
         try:
-            with pyfits.open(fname) as hdul:
+            with afits.open(fname) as hdul:
                 header = hdul[image_index].header
                 minx.append(-header['CRPIX1'])
                 miny.append(-header['CRPIX2'])
