@@ -24,7 +24,7 @@ python colorPostage.py --user YOUR_ACCOUNT --outDir pngs coords.txt
 ```
 usage: colorPostage.py [-h] --outDir OUTDIR --user USER
                        [--filters FILTERS FILTERS FILTERS] [--fov FOV]
-                       [--rerun {any,pdr2_dud,pdr2_wide}] [--color {hsc,sdss}]
+                       [--rerun {any,pdr3_dud,pdr3_wide}] [--color {hsc,sdss}]
                        input
 
 positional arguments:
@@ -36,6 +36,6 @@ optional arguments:
   --user USER, -u USER
   --filters FILTERS FILTERS FILTERS, -f FILTERS FILTERS FILTERS
   --fov FOV
-  --rerun {any,pdr2_dud,pdr2_wide}
+  --rerun {any,pdr3_dud,pdr3_wide}
   --color {hsc,sdss}
 ```

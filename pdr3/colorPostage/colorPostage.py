@@ -38,7 +38,7 @@ def main():
     parser.add_argument('--user', '-u', required=True)
     parser.add_argument('--filters', '-f', nargs=3, default=['HSC-I', 'HSC-R', 'HSC-G'])
     parser.add_argument('--fov', default='30asec')
-    parser.add_argument('--rerun', default='any', choices='any pdr2_dud pdr2_wide'.split())
+    parser.add_argument('--rerun', default='any', choices='any pdr3_dud pdr3_wide'.split())
     parser.add_argument('--color', choices='hsc sdss'.split(), default='hsc')
     parser.add_argument('input', type=argparse.FileType('r'))
     args = parser.parse_args()
@@ -61,8 +61,8 @@ def main():
                 makeColorPng(rgb, outFile, args.color)
 
 
-TOP_PAGE = 'https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr2/'
-API = 'https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr2/cgi-bin/cutout'
+TOP_PAGE = 'https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr3/'
+API = 'https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr3/cgi-bin/cutout'
 
 
 def loadCoords(input):
