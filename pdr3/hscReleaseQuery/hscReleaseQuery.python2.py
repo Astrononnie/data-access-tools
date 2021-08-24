@@ -22,7 +22,7 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--user', '-u', required=True,
                         help='specify your account name')
-    parser.add_argument('--release-version', '-r', choices='pdr1 pdr2 pdr2-citus'.split(), default='pdr2',
+    parser.add_argument('--release-version', '-r', choices='pdr1 pdr2 pdr2-citus pdr3 pdr3-citus'.split(), default='pdr3',
                         help='specify release version')
     parser.add_argument('--delete-job', '-D', action='store_true',
                         help='delete the job you submitted after your downloading')

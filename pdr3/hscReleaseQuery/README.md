@@ -10,7 +10,8 @@ python hscReleaseQuery.py --user $YOUR_ID 1.sql --format csv > 1.csv
 
 ## Advanced Usage
 ```
-usage: hscReleaseQuery.py [-h] --user USER [--release-version {pdr1,pdr2}]
+usage: hscReleaseQuery.py [-h] --user USER
+                          [--release-version {pdr1,pdr2,pdr2-citus,pdr3,pdr3-citus}]
                           [--delete-job] [--format {csv,csv.gz,sqlite3,fits}]
                           [--nomail] [--password-env PASSWORD_ENV] [--preview]
                           [--skip-syntax-check] [--api-url API_URL]
@@ -22,8 +23,8 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   --user USER, -u USER  specify your account name (default: None)
-  --release-version {pdr1,pdr2}, -r {pdr1,pdr2}
-                        specify release version (default: pdr2)
+  --release-version {pdr1,pdr2,pdr2-citus,pdr3,pdr3-citus}, -r {pdr1,pdr2,pdr2-citus,pdr3,pdr3-citus}
+                        specify release version (default: pdr3)
   --delete-job, -D      delete the job you submitted after your downloading
                         (default: False)
   --format {csv,csv.gz,sqlite3,fits}, -f {csv,csv.gz,sqlite3,fits}
