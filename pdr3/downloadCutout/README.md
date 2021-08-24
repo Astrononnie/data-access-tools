@@ -24,7 +24,7 @@ to a single file over and over.
 ### Use coordinate list
 
 You can feed a coordinate list that is in nearly the same format as
-https://hscdata.mtk.nao.ac.jp/das_quarry/dr4/manual.html#list-to-upload
+https://hsc-release.mtk.nao.ac.jp/das_cutout/pdr3/manual.html#list-to-upload
 
 There are a few differences:
 
