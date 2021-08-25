@@ -137,7 +137,7 @@ def main():
             psfreqs = read_psfreqs(f, default=psfreq, type=args.listtype)
     else:
         if not psfreq.iscomplete():
-            raise RuntimeError(f"Specify either (--ra --dec --sw --sh) or --list.")
+            raise RuntimeError(f"Specify either (--ra --dec) or --list.")
         psfreqs = [psfreq]
 
     download(psfreqs, user=args.user, password=args.password, onmemory=False)
